@@ -7,7 +7,7 @@ from datetime import datetime
 from threading import Thread
 import lib_access as la
 import decision_making_module as dmm
-import summarizer_final as sumarizer
+import summarizer_final as summarizer
 import numpy as np
 # -*- coding: utf-8 -*-
 app = Flask(__name__)
@@ -20,9 +20,9 @@ def form():
     return render_template('form_submit.html')
 
 
-def connect_s3():
-    access_key = "EXOb02927b095f5f60382e5513e"
-    secret_key = "vL3PGh4fiPBNb5L4QNIatRyy2xSV8JkfCiCIum_dZJA"
+def connect_s3(duiid):
+    access_key = sys.argv[1]
+    secret_key = sys.argv[2]
     host       = "sos.exo.io"
 
     conn = boto.connect_s3(
@@ -111,7 +111,6 @@ def rank_per_resource(list_id_res):
     list_id_res.sort(key=lambda tuple: tuple[1])
     return(temp[0])
 
-
 def check_vm_specs(vm_ids):
     print "CHECK SPECS"
     vm_specs   = map(get_vm_specs, vm_ids)
@@ -191,7 +190,7 @@ def watch_execution_time(start_time):
     time_format = '%Y-%m-%d %H:%M:%S.%f UTC'
     delta = datetime.utcnow() - datetime.strptime(start_time,
                                             time_format)
-    execution_time = divmod(delta.days * 86400 + delta.seconds, 60)
+    execution_time = delta.seconds
     return(execution_time)
 
 
@@ -207,10 +206,10 @@ def wait_product(deployment_id, cloud, time_limit):
     while state != "ready" and  not output_id:
         deployment_data = api.get_deployment(deployment_id)
         t = watch_execution_time(deployment_data[3])
-        print "Waiting state ready. Currently in state : \
-                 %s Time elapsed: %s mins, seconds" % (state, t)
-
-        if (t[0]* 60 + t[1]) >= time_limit:
+        print "Waiting state ready. Currently in state: \
+%s Time elapsed: %s seconds" % (state, t)
+        print "SLA time bound left: %d" % (int(time_limit) - int(t))
+        if t >= time_limit:
             cancel_deployment(deployment_id)
             return("SLA time bound exceeded. Deployment is cancelled.")
 
@@ -218,7 +217,7 @@ def wait_product(deployment_id, cloud, time_limit):
         state = deployment_data[2]
         output_id = deployment_data[8].split('/')[-1]
 
-    conn = connect_s3()
+    conn = connect_s3(deployment_id)
     download_product("eodata_output2", conn, output_id)
     summarizer.summarize_run(deployment_id, cloud)
 
@@ -370,12 +369,11 @@ def deploy_run(cloud, product, serviceOffers, time ):
     cloud = "eo-cesnet-cz1"
     rep = ""
     if mapper_so and reducer_so:
-        print "DEPLOY:"  + mapper_so + " " + reducer_so + " in" + cloud
         deploy_id = api.deploy('EO_Sentinel_1/procSAR',
                 cloud={'mapper': cloud, 'reducer':cloud},
                 parameters={'mapper' : {'service-offer': \
                              mapper_so,
-                             'product-list':product},
+                             'product-list': (' ').join(product)},
                              'reducer': {'service-offer': \
                              reducer_so}},
                 multiplicity={'mapper': len(product),
@@ -397,22 +395,22 @@ def get_user_connectors(user):
 
 @app.route('/SLA_COST', methods=['GET'])
 def sla_cost():
-
-
-
-    data = _get_elastic(index, type).json()
-    clouds = get_user_connectors('simon1992')
+    cloud = get_user_connectors('simon1992')
     data_admin = {}
-
-    for c in clouds:
-        item = requests.get(elastic_host
-                    + '/sar7' + doc_type=type + c).json()
-        ids = _components_service_offers(item['components'])
-        item['price'] = dmm.get_price(ids)
+    for c in cloud:
+        item = requests.get(elastic_host + '/sar7' + doc_type + c).json()
+        if item['found']:
+            pp(item)
+            item = item['_source']
+            for k,v in item.items():
+                specs = _format_specs(v['components'])
+                ids = _components_service_offers(c, specs)
+                item[k]['price'] = dmm.get_price(ids.values(), v['execution_time'])
+                #pp(item)
         data_admin[c] = item
 
 
-    resp = Response(data_admin, status=status, mimetype='application/json')
+    resp = Response(data_admin, status=200, mimetype='application/json')
     resp.headers['Link'] = 'http://sixsq.eoproc.com'
     return resp
     return "check"
@@ -489,12 +487,11 @@ def sla_cli():
         if data_loc:
             msg    = "SLA accepted! "
             status = "201"
-            time = 500
             ranking = dmm.dmm(data_loc, time, offer)
             pp(ranking)
             serviceOffers = { 'mapper': ranking[0][1],
                               'reducer': ranking[0][2]}
-            deploy_run(data_loc, product_list, serviceOffers, time) # offer
+            deploy_run(ranking[0][0], product_list, serviceOffers, time) # offer
 
         else:
             msg = "Data not found in clouds!"

@@ -1,11 +1,11 @@
-rom __future__ import division
+from __future__ import division
 from elasticsearch import Elasticsearch
 from pprint import pprint as pp
 import requests
 import sys
 from slipstream.api import Api
 import lib_access as la
-import server_test as srv3
+import server3 as srv3
 import numpy as np
 import math
 api = Api()
