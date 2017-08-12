@@ -1,12 +1,10 @@
 Sentinel 1 (SAR) framework
 ===============================
 
-This repo consists of the installation scripts 
+This repo consists of the installation scripts of an Nuvla app.
+It launches a server waiting for incoming requests of SAR product processing [SAR_app](https://github.com/SimonNtz/SAR_app/) It provides a log benchmarking system via Elastic.
 
-
-This repository consists of a REST server which deploys  [SAR_app](https://github.com/SimonNtz/SAR_app/) by SixSq parametrized according the data input.
-
-## Instructions
+## prerequisites
 
 In order to successfully execute the application, you should have:
 
@@ -22,12 +20,25 @@ In order to successfully execute the application, you should have:
  3. Python `>=2.6 and <3` and python package manager `pip` installed. Usually
     can be installed with `sudo easy_install pip`.
 
- 4. SlipStream python Api installed: `pip install slipstream-api`.
+ 4. SlipStream python ss-client installed: `pip install slipstream-client`.
 
- 5. Flask Api installed: `pip install Flask-API`
+ ## Instructions
 
- 6. Boto intstalled: `pip install boto`
+  1. Clone this repository with
 
- 7. Requests intstalled: `pip install requests`
+     ```
+     $ git clone https://github.com/SimonNtz/SAR_framework.git
+     ```
 
- 8. clone the repository `git clone https://github.com/SimonNtz/SAR_framework/``
+  3. Set the environment variables
+
+     ```
+     $ export SLIPSTREAM_USERNAME=<nuv.la username>
+     $ export SLIPSTREAM_PASSWORD=<nuv.la password>
+     ```
+
+     and run the SAR processor on [Nuvla](https://nuv.la) with
+
+     ```
+     $ ./SAR_server_run.sh
+     ```

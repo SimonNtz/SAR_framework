@@ -10,8 +10,9 @@ set -o pipefail
 
 # Connector instance name as defined on https://nuv.la for which user has
 # provided credentials in its profile.
+trap 'rm -f $LOG' EXIT
 
-
+LOG=`mktemp`
 SS_ENDPOINT=https://nuv.la
 
 python -u `which ss-execute` \
@@ -19,6 +20,14 @@ python -u `which ss-execute` \
     --wait 60 \
     --keep-running="never" \
     --parameters="
-    $SLIPSTREAM_USERNAME,
-    $SLIPSTREAM_PASSWORD"
-    EO_Sentinel_1/ELK-server
+    ss-username=$SLIPSTREAM_USERNAME,
+    ss-password=$SLIPSTREAM_PASSWORD" \
+    EO_Sentinel_1/ELK-server 2>&1 | tee $LOG
+
+if [ "$?" == "0" ]; then
+    run=`awk '/::: Waiting/ {print $7}' $LOG`
+    echo ""
+    curl -u $SLIPSTREAM_USERNAME:$SLIPSTREAM_PASSWORD \
+        $run/machine:hostname
+    echo
+fi

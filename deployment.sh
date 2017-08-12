@@ -26,9 +26,10 @@ _get_ss_login() {
 
 
 _ss_set_hostname
+_get_ss_login
 _install_python_APIs
 _instal_server_module
-_get_ss_login
+
 
 cd ~/SAR_framework/
 python server3.py $ss_username $ss_password &
