@@ -6,7 +6,6 @@ import sys
 from slipstream.api import Api
 import lib_access as la
 import server3 as srv3
-import numpy as np
 import math
 api = Api()
 #api.login('simon1992', '12mc0v2ee64o9')
