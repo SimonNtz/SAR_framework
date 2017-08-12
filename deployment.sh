@@ -31,4 +31,4 @@ _instal_server_module
 _get_ss_login
 
 cd ~/SAR_framework/
-python server3.py ss_username ss_password &
+python server3.py $ss_username $ss_password &

@@ -1,7 +1,10 @@
 Sentinel 1 (SAR) framework
 ===============================
 
-This repository consists of a server using Flask API. It deploys  the application [SAR_app](https://github.com/SimonNtz/SAR_app/) by SixSq parametrized according the data input.
+This repo consists of the installation scripts 
+
+
+This repository consists of a REST server which deploys  [SAR_app](https://github.com/SimonNtz/SAR_app/) by SixSq parametrized according the data input.
 
 ## Instructions
 
@@ -19,21 +22,12 @@ In order to successfully execute the application, you should have:
  3. Python `>=2.6 and <3` and python package manager `pip` installed. Usually
     can be installed with `sudo easy_install pip`.
 
- 4. SlipStream Client installed: `pip install slipstream-client`.
+ 4. SlipStream python Api installed: `pip install slipstream-api`.
 
  5. Flask Api installed: `pip install Flask-API`
 
- 6. Boto3 intstalled: `git clone git://github.com/boto/boto.git
-                        cd boto
-                        python setup.py install`
+ 6. Boto intstalled: `pip install boto`
 
-7. Requests installed
+ 7. Requests intstalled: `pip install requests`
 
-1. 
-1. Do not change the file stucture (i.e. `SAR_mapper.py` and `SAR_reducer.sh` should stay at the root.)
-
-1. Implement your own mapper and reducer.
-
-1. The repository's name must stay as `SAR_proc`
-
-*Note: data files are located in the root directory of the mapper and reducer scripts by default.*
+ 8. clone the repository `git clone https://github.com/SimonNtz/SAR_framework/``
