@@ -7,16 +7,13 @@ from slipstream.api import Api
 import lib_access as la
 import server3 as srv3
 import math
+
 api = Api()
-#api.login('simon1992', '12mc0v2ee64o9')
-
-index = 'sar7'
-
-type = 'foo3'
+index = 'sar'
+type = 'offer-cloud'
 
 server_host = 'localhost'
 res = Elasticsearch([{'host': 'localhost', 'port': 9200}])
-
 
 def get_price(ids, time):
     mapper_unit_price = float(api.cimi_get(ids[0]).json['price:unitCost'])
@@ -50,7 +47,8 @@ def query_db(cloud, time, offer):
 
 '''
 
-def dmm(cloud, time, offer):
+def dmm(cloud, time, offer, ss_username, ss_password):
+    api.login(ss_username, ss_password)
     dtype = '|S64 , |S64, i8'
     ranking = []
     for c in cloud:
@@ -71,4 +69,4 @@ if __name__ == '__main__':
     cloud=['ec2-eu-west']
     time = 1000
     offer = '1'
-    dmm(cloud, time, offer)
+    dmm(cloud, time, offer, ss_username, ss_password)

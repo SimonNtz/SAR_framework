@@ -18,11 +18,10 @@ doc_type = '/foo3/'
 def form():
     return render_template('form_submit.html')
 
-
 def connect_s3(duiid):
-    access_key = sys.argv[1]
-    secret_key = sys.argv[2]
-    host       = "sos.exo.io"
+    access_key = s3_credentials[2]
+    secret_key = s3_credentials[3]
+    host       = s3_credentials[0]
 
     conn = boto.connect_s3(
         aws_access_key_id=access_key,
@@ -40,39 +39,6 @@ def _format_specs(specs):
         specs[k][2] = ("resource:disk>'%d'" % v[2])
 
     return specs
-
-def get_BDB(case):
-
-    specs_ex = ["resource:vcpu='4'",
-                       "resource:ram>'15000'",
-                       "resource:disk>'100'",
-                       "resource:operatingSystem='linux'"]
-    specs_ex2 = ["resource:vcpu='4'",
-                       "resource:ram>'15000'",
-                       "resource:disk>'100'",
-                       "resource:operatingSystem='linux'"]
-    BDB = {
-
-     'case1': {'run_a': ['c1',
-                'service-offer/2d225047-9068-4555-81dd-d288562a57b1',
-                500],
-                     'run_b': ['c2',
-                'service-offer/a264258f-b6fe-4f3e-b9f4-3722b6a1c6c7',
-                 500],
-                 'run_c': ['c2',
-                 'service-offer/a264258f-b6fe-4f3e-b9f4-3722b6a1c6c7',
-                 600],
-                'run_d': ['c1',
-                'service-offer/a264258f-b6fe-4f3e-b9f4-3722b6a1c6c7',
-                650],
-                'run_d': ['c4',
-                'service-offer/a264258f-b6fe-4f3e-b9f4-3722b6a1c6c7',
-                650]},
-
-    'case2' : {},
-    }
-    return (BDB[case])
-
 
 def apply_time_filter(BDB, t):
     return({k:v for k,v in BDB.iteritems() if v[2] <= t})
@@ -217,8 +183,8 @@ def wait_product(deployment_id, cloud, time_limit):
         output_id = deployment_data[8].split('/')[-1]
 
     conn = connect_s3(deployment_id)
-    download_product("eodata_output2", conn, output_id)
-    summarizer.summarize_run(deployment_id, cloud)
+    download_product(s3_credentials[1], conn, output_id)
+    summarizer.summarize_run(deployment_id, cloud, ss_username, ss_password)
 
     return("Product %s delivered!" % outpud_id)
 
@@ -267,7 +233,7 @@ def _schema_validation(jsonData):
     jsonData = {'SLA':dict, 'result':dict}
 
     dict('SLA')    = {'requirements':['time','price', 'resolution'], 'order':['prod_list']}
-    dict('result') = {''}
+    dict('result') = {'s3_credentials':[host, bucket, api-key, secret_key]}
     """
     if not "SLA" in jsonData:
         raise ValueError("No 'SLA' in given data")
@@ -439,6 +405,7 @@ def sla_init():
    data = request.get_json()
    product = data['product']
    specs_vm   = _format_specs(data['specs_vm'])
+   s3_credentials = data['result']
    print specs_vm
 
    try:
@@ -472,6 +439,8 @@ def sla_cli():
         _request_validation(request)
         data = request.get_json()
         sla = data['SLA']
+        global s3_credentials = data['result']['s3_credentials']
+
         pp(sla)
         product_list  =  sla['product_list']
         time  = sla['requirements'][0]
@@ -486,7 +455,7 @@ def sla_cli():
         if data_loc:
             msg    = "SLA accepted! "
             status = "201"
-            ranking = dmm.dmm(data_loc, time, offer)
+            ranking = dmm.dmm(data_loc, time, offer, ss_username, ss_password)
             pp(ranking)
             serviceOffers = { 'mapper': ranking[0][1],
                               'reducer': ranking[0][2]}
@@ -507,7 +476,9 @@ def sla_cli():
     return resp
 
 if __name__ == '__main__':
-    api.login('simon1992', '12mc0v2ee64o9')
+    ss_username = sys.argv[1]
+    ss_password = sys.argv[2]
+    api.login(ss_username, ss_password)
     app.run(
         host="0.0.0.0",
         port=int("81")

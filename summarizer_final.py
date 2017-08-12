@@ -9,8 +9,6 @@ from slipstream.api import Api
 import math
 
 api = Api()
-api.login('simon1992', '12mc0v2ee64o9')
-
 server_host = 'localhost'
 res = Elasticsearch([{'host': 'localhost', 'port': 9200}])
 
@@ -211,7 +209,8 @@ def create_index(cloud, offer, time_records, products, serviceOffers):
     print rep['created']
     pp(res.get(index='sar', id=9))
 
-def summarize_run(duiid, cloud, offer):
+def summarize_run(duiid, cloud, offer, ss_username, ss_password):
+    api.login(ss_username, ss_password)
     response = query_run(duiid, cloud)
     [mappers, reducer] = div_node(response['hits'])
     [mappersData, reducerData] = extract_node_data(mappers, reducer, duiid)
@@ -227,7 +226,7 @@ if __name__ ==  '__main__' :
     cloud = "ec2-eu-west"
     duiid = "3d371680-86d2-49fc-b3d0-2fd5289cb1af"
     offer = "CannedOffer_1"
-    summarize_run(duiid, cloud, offer)
+    summarize_run(duiid, cloud, offer, ss_username, ss_password)
 
 
  # TODO: define complete run with raise error !
