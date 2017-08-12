@@ -20,8 +20,8 @@ _install_python_APIs() {
 }
 
 _get_ss_login() {
-  ss_username = `ss-get ss-username`
-  ss_password = `ss-get ss-password`
+  ss_username=`ss-get ss-username`
+  ss_password=`ss-get ss-password`
 }
 
 
