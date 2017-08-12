@@ -18,7 +18,7 @@ doc_type = '/foo3/'
 def form():
     return render_template('form_submit.html')
 
-def connect_s3(duiid):
+def connect_s3():
     access_key = s3_credentials[2]
     secret_key = s3_credentials[3]
     host       = s3_credentials[0]
@@ -133,7 +133,7 @@ def download_product(bucket_id, conn, output_id):
     param    output_id: product id
     type     output_id: str
     """
-
+    conn = connect_s3()
     bucket      = conn.get_bucket(bucket_id)
     key         = bucket.get_key(output_id)
     output_path = os.getcwd() + output_id
@@ -182,7 +182,6 @@ def wait_product(deployment_id, cloud, time_limit):
         state = deployment_data[2]
         output_id = deployment_data[8].split('/')[-1]
 
-    conn = connect_s3(deployment_id)
     download_product(s3_credentials[1], conn, output_id)
     summarizer.summarize_run(deployment_id, cloud, ss_username, ss_password)
 
@@ -439,7 +438,7 @@ def sla_cli():
         _request_validation(request)
         data = request.get_json()
         sla = data['SLA']
-        global s3_credentials = data['result']['s3_credentials']
+        s3_credentials = data['result']['s3_credentials']
 
         pp(sla)
         product_list  =  sla['product_list']
@@ -478,6 +477,8 @@ def sla_cli():
 if __name__ == '__main__':
     ss_username = sys.argv[1]
     ss_password = sys.argv[2]
+
+    global s3_credentials
     api.login(ss_username, ss_password)
     app.run(
         host="0.0.0.0",
