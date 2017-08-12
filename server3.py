@@ -1,5 +1,5 @@
 from flask import Flask, url_for, request, Response, render_template
-import os, time, json, boto, boto.s3.connection, operator
+import sys, os, time, json, boto, boto.s3.connection, operator
 import requests
 from pprint import pprint as pp
 from slipstream.api import Api
@@ -122,7 +122,7 @@ def DMM(clouds, time, offer):
     return(ranking)
 
 
-def download_product(bucket_id, conn, output_id):
+def download_product(bucket_id, output_id):
     """
     :param   bucket_id: uri of the bucket
     :type    bucket_id: str
@@ -182,7 +182,7 @@ def wait_product(deployment_id, cloud, time_limit):
         state = deployment_data[2]
         output_id = deployment_data[8].split('/')[-1]
 
-    download_product(s3_credentials[1], conn, output_id)
+    download_product(s3_credentials[1], output_id)
     summarizer.summarize_run(deployment_id, cloud, ss_username, ss_password)
 
     return("Product %s delivered!" % outpud_id)
@@ -392,8 +392,8 @@ def sla_cost():
     : Populate the DB
 
     input = { product: "",
-              specs_vm: {'mapper': la.request_vm(specs['mapper'], cloud),
-                      'reducer': a.request_vm(specs['reducer'], cloud)}
+              specs_vm: {'mapper': ['']),
+                      'reducer': ['']}
 
 
 '''

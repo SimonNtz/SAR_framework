@@ -42,3 +42,29 @@ In order to successfully execute the application, you should have:
      ```
      $ ./SAR_server_run.sh
      ```
+  4. Wait for the 'ready' state
+
+  5. Recover the ip of the server and send requests to the server
+
+    ```
+    - Initialization:
+
+    curl -H "Content-Type: application/json" -X POST /<server_ip>:81/SLA_INIT -d
+    '{
+      "specs_vm"={"mapper":[4,16,100], "reducer":[1,0,5,10]},
+      "product_list"=["S1A_IW_GRDH_1SDV_20151226T182813_20151226T182838_009217_00D48F_5D5F"],
+      "result" = '{"s3_credentials":[<host_base>, <buket_id>, <access_key>, <secret_key>]}
+      }'
+
+
+    - SLA request:
+
+    curl -H "Content-Type: application/json" -X POST /<server_ip>:81/SLA_CLI -d
+     '{
+       "SLA":{"requirements": [1000, 1],
+              "product_list": ["S1A_IW_GRDH_1SDV_20151226T182813_20151226T182838_009217_00D48F_5D5F",
+                               "S1A_IW_GRDH_1SDV_20160424T182813_20160424T182838_010967_010769_AA98"]},
+              "result": {"s3_credentials":[<host_base>, <buket_id>, <access_key>, <secret_key>]}
+      }'
+
+    ```

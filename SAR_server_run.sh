@@ -24,9 +24,12 @@ python -u `which ss-execute` \
     ss-password=$SLIPSTREAM_PASSWORD" \
     EO_Sentinel_1/ELK-server 2>&1 | tee $LOG
 
+    run=`awk '/::: Waiting/ {print $7}' $LOG`
+    echo $run
+
 if [ "$?" == "0" ]; then
     run=`awk '/::: Waiting/ {print $7}' $LOG`
-    echo ""
+    echo $run
     curl -u $SLIPSTREAM_USERNAME:$SLIPSTREAM_PASSWORD \
         $run/machine:hostname
     echo
