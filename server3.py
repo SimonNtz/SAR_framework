@@ -8,7 +8,6 @@ from threading import Thread
 import lib_access as la
 import decision_making_module as dmm
 import summarizer_final as summarizer
-import numpy as np
 # -*- coding: utf-8 -*-
 app = Flask(__name__)
 api = Api()
