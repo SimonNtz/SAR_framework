@@ -423,7 +423,7 @@ def sla_init():
    try:
        _check_BDB_state()
        data_loc   = find_data_loc(product_list)
-       user_cloud = str(get_user_connectors('simon1992')
+       user_cloud = str(get_user_connectors('simon1992'))
        data_loc = [c for c in data_loc if c in user_cloud]
        if not data_loc :
            raise ValueError("The data has not been found in any connector \
