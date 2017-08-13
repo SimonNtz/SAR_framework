@@ -1,4 +1,5 @@
 from flask import Flask, url_for, request, Response, render_template
+from elasticsearch import Elasticsearch
 import sys, os, time, json, boto, boto.s3.connection, operator
 import requests
 from pprint import pprint as pp
@@ -13,6 +14,9 @@ app = Flask(__name__)
 api = Api()
 elastic_host = 'http://localhost:9200'
 doc_type = '/foo3/'
+server_host = 'localhost'
+res = Elasticsearch([{'host': 'localhost', 'port': 9200}])
+
 
 @app.route('/')
 def form():
@@ -159,7 +163,7 @@ def watch_execution_time(start_time):
     return(execution_time)
 
 
-def wait_product(deployment_id, cloud, time_limit):
+def wait_product(deployment_id, cloud, offer,  time_limit):
     """
     :param   deployment_id: uuid of the deployment
     :type    deployment_id: str
@@ -183,7 +187,7 @@ def wait_product(deployment_id, cloud, time_limit):
         output_id = deployment_data[8].split('/')[-1]
 
     download_product(s3_credentials[1], output_id)
-    summarizer.summarize_run(deployment_id, cloud, ss_username, ss_password)
+    summarizer.summarize_run(deployment_id, cloud, offer, ss_username, ss_password)
 
     return("Product %s delivered!" % outpud_id)
 
@@ -193,7 +197,7 @@ def _all_products_on_cloud(c, rep_so, prod_list):
     print prod_list
     products_cloud = ['xXX' for so in rep_so if so['connector']['href'] == c]
 
-    return len(products_cloud) == len(prod_list)
+    return len(products_cloud) >= len(prod_list)
 
 def _check_str_list(data):
 	if isinstance(data, unicode) or isinstance(data, str):
@@ -256,15 +260,23 @@ def _schema_validation(jsonData):
     return True
 
 
-def populate_db( index, type, id=None):
-      request = elastic_host + index + type + id
-      rep = res.indices.create(request, ignore=400)
-
+def populate_db( index, type, id=""):
+      if id:
+          rep = res.indices.create(index=index,
+                                   doc_type=type,
+                                   ignore=400)
+      else:
+          rep = res.index(index=index,
+                          doc_type=type,
+                          id=id,
+                          body={})
+      print "Create index on BDB"
+      print rep
       return rep
 
 
-def create_BDB(clouds, specs_vm):
-    index='/sar/'
+def create_BDB(clouds, specs_vm, product_list, offer):
+    index='/sar'
     type='/offer-cloud/'
     req_index = requests.get(elastic_host + index)
 
@@ -272,11 +284,10 @@ def create_BDB(clouds, specs_vm):
         populate_db( index, type)
 
     for c in clouds:
-        rep = populate_db( index, type, c)
+        populate_db( index, type, c)
         serviceOffers = _components_service_offers(c, specs_vm)
-
-        benchmarks = deploy_run(c, product, serviceOffers, 9999)
-        print rep
+        print "Deploy run: %s on cloud %s" \
+        % (deploy_run(c, product_list, serviceOffers, offer,9999), c)
 
 def _check_BDB_cloud(index, clouds):
     valid_cloud = []
@@ -325,7 +336,7 @@ def _components_service_offers(cloud, specs):
                                         cloud)['serviceOffers'][0]['id']}
     return serviceOffers
 
-def deploy_run(cloud, product, serviceOffers, time ):
+def deploy_run(cloud, product, serviceOffers, offer, time ):
     #mapper_so =  serviceOffers['mapper']
     #reducer_so =  serviceOffers['reducer']
     mapper_so = "service-offer/cc382a2d-20f4-499d-82c2-046873e0cd05"
@@ -344,7 +355,7 @@ def deploy_run(cloud, product, serviceOffers, time ):
                               'reducer':1},
                 tags='EOproc', keep_running='never')
 
-        daemon_watcher = Thread(target = wait_product, args = (deploy_id, cloud, time))
+        daemon_watcher = Thread(target = wait_product, args = (deploy_id, cloud, offer, time))
         daemon_watcher.setDaemon(True)
         daemon_watcher.start()
         rep += rep
@@ -402,21 +413,24 @@ def sla_cost():
 @app.route('/SLA_INIT', methods=['POST'])
 def sla_init():
    data = request.get_json()
-   product = data['product']
+   product_list = data['product_list']
    specs_vm   = _format_specs(data['specs_vm'])
-   s3_credentials = data['result']
-   print specs_vm
+   global s3_credentials
+   s3_credentials = data['result']['s3_credentials']
+   offer = "CannedOffer_1"
+   print "Instance sizes: " + specs_vm
 
    try:
        _check_BDB_state()
-       data_loc   = find_data_loc(product)
-       print data_loc
+       data_loc   = find_data_loc(product_list)
+       user_cloud = str(get_user_connectors('simon1992')
+       data_loc = [c for c in data_loc if c in user_cloud]
        if not data_loc :
            raise ValueError("The data has not been found in any connector \
                              associated with the Nuvla account")
        print "Data located in: %s" % data_loc
-       create_BDB(data_loc, specs_vm)
-       msg = "Cloud %s currently benchmarked." % benchmarks
+       create_BDB(data_loc, specs_vm, product_list, offer)
+       msg = "Cloud %s are currently benchmarked." % data_loc
        status = "201"
 
    except ValueError as err:
@@ -438,6 +452,7 @@ def sla_cli():
         _request_validation(request)
         data = request.get_json()
         sla = data['SLA']
+        global s3_credentials
         s3_credentials = data['result']['s3_credentials']
 
         pp(sla)
@@ -458,7 +473,10 @@ def sla_cli():
             pp(ranking)
             serviceOffers = { 'mapper': ranking[0][1],
                               'reducer': ranking[0][2]}
-            deploy_run(ranking[0][0], product_list, serviceOffers, time) # offer
+            deploy_run(ranking[0][0],
+                       product_list,
+                       serviceOffers,
+                       offer, time) # offer
 
         else:
             msg = "Data not found in clouds!"
@@ -477,8 +495,6 @@ def sla_cli():
 if __name__ == '__main__':
     ss_username = sys.argv[1]
     ss_password = sys.argv[2]
-
-    global s3_credentials
     api.login(ss_username, ss_password)
     app.run(
         host="0.0.0.0",

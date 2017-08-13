@@ -1,8 +1,11 @@
 Sentinel 1 (SAR) framework
 ===============================
 
-This repo consists of the installation scripts of an Nuvla app.
-It launches a server waiting for incoming requests of SAR product processing [SAR_app](https://github.com/SimonNtz/SAR_app/) It provides a log benchmarking system via Elastic.
+This repo consists of a SAR product generation infrastructure designed for SLA
+enforcement. It is packaged in an Nuvla application. Its image processing job
+are done via the call of a relative app namely [SAR_app](https://github.com/SimonNtz/SAR_app/).
+The main run starts an ELK stack and an Flask REST server which is the interface
+for job request.
 
 ## prerequisites
 
@@ -37,34 +40,58 @@ In order to successfully execute the application, you should have:
      $ export SLIPSTREAM_PASSWORD=<nuv.la password>
      ```
 
-     and run the SAR processor on [Nuvla](https://nuv.la) with
+     and run the SAR framework on [Nuvla](https://nuv.la) with
 
      ```
      $ ./SAR_server_run.sh
      ```
   4. Wait for the 'ready' state
 
-  5. Recover the ip of the server and send requests to the server
+  5. Recover the server's ip and start work with !
 
     ```
-    - Initialization:
+    - Initialization with benchmarking specs and product:
 
     curl -H "Content-Type: application/json" -X POST /<server_ip>:81/SLA_INIT -d
     '{
-      "specs_vm"={"mapper":[4,16,100], "reducer":[1,0,5,10]},
-      "product_list"=["S1A_IW_GRDH_1SDV_20151226T182813_20151226T182838_009217_00D48F_5D5F"],
-      "result" = '{"s3_credentials":[<host_base>, <buket_id>, <access_key>, <secret_key>]}
+      "specs_vm"={
+          "mapper":[4,16,100],
+           "reducer":[1,0,5,10]
+           },
+      "product_list"=[
+          "S1A_IW_GRDH_1SDV_20151226T182813_20151226T182838_009217_00D48F_5D5F"
+          ],
+      "result" = '{
+        "s3_credentials":[
+             <host_base>,
+             <buket_id>,
+             <access_key>,
+             <secret_key>
+               ]
+             }
       }'
 
-
-    - SLA request:
+    - Product generation with SLA:
 
     curl -H "Content-Type: application/json" -X POST /<server_ip>:81/SLA_CLI -d
      '{
-       "SLA":{"requirements": [1000, 1],
-              "product_list": ["S1A_IW_GRDH_1SDV_20151226T182813_20151226T182838_009217_00D48F_5D5F",
-                               "S1A_IW_GRDH_1SDV_20160424T182813_20160424T182838_010967_010769_AA98"]},
-              "result": {"s3_credentials":[<host_base>, <buket_id>, <access_key>, <secret_key>]}
+       "SLA":{
+         "requirements": [
+                      <Time bound>,
+                       <OFFER>], # still hardcoded to "CannedOffer_1"
+          "product_list": [
+                "S1A_IW_GRDH_1SDV_20151226T182813_20151226T182838_009217_00D48F_5D5F",
+                "S1A_IW_GRDH_1SDV_20160424T182813_20160424T182838_010967_010769_AA98"
+                ]
+            },
+        "result": {
+                "s3_credentials":[
+                      <host_base>,
+                      <buket_id>,
+                      <access_key>,
+                      <secret_key>
+                      ]
+                    },
       }'
 
     ```
