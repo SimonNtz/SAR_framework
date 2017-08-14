@@ -203,11 +203,11 @@ def create_index(cloud, offer, time_records, products, serviceOffers):
           }
 
     rep = res.index(index='sar',
-                      doc_type='foo3',
-                      id=cloud, #duiid,
+                      doc_type='eo-proc',
+                      id=cloud, 
                       body=run)
     print rep['created']
-    pp(res.get(index='sar', id=9))
+    pp(res.get(index='sar', id=cloud))
 
 def summarize_run(duiid, cloud, offer, ss_username, ss_password):
     api.login(ss_username, ss_password)
