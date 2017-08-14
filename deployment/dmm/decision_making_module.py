@@ -5,7 +5,7 @@ import requests
 import sys
 from slipstream.api import Api
 import lib_access as la
-import server3 as srv3
+import server_dmm as srv_dmm
 import math
 
 api = Api()
@@ -53,9 +53,9 @@ def dmm(cloud, time, offer, ss_username, ss_password):
         rep = query_db(c, time, offer)
         pp(rep['_source']['CannedOffer_1'])
         if rep['found']:
-            specs = srv3._format_specs(rep['_source'][offer]['components'])
+            specs = srv_dmm._format_specs(rep['_source'][offer]['components'])
             time  = rep['_source'][offer]['execution_time']
-            serviceOffers = srv3._components_service_offers(c, specs)
+            serviceOffers = srv_dmm._components_service_offers(c, specs)
             mapper_so =  serviceOffers['mapper']
             reducer_so =  serviceOffers['reducer']
             cost = get_price([mapper_so, reducer_so], time)

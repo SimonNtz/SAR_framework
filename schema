@@ -1,5 +1,0 @@
-├── SLA               : dict
-    │   ├── products      : list(str)
-    │   ├── requirements  : list(str)
-    ├── Results           : dict
-    │   ├── ...

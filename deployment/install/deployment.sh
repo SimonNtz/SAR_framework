@@ -31,5 +31,5 @@ _install_python_APIs
 _instal_server_module
 
 
-cd ~/SAR_framework/
+cd ~/SAR_framework/deployment/dmm/
 python server3.py $ss_username $ss_password &
