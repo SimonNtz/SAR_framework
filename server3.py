@@ -186,6 +186,7 @@ def wait_product(deployment_id, cloud, offer,  time_limit):
         state = deployment_data[2]
         output_id = deployment_data[8].split('/')[-1]
 
+
     download_product(s3_credentials[1], output_id)
     summarizer.summarize_run(deployment_id, cloud, offer, ss_username, ss_password)
 
@@ -372,6 +373,7 @@ def sla_cost():
     cloud = get_user_connectors('simon1992')
     data_admin = {}
     for c in cloud:
+
         item = requests.get(elastic_host + '/' + index + doc_type + c).json()
         if item['found']:
             pp(item)
@@ -468,6 +470,7 @@ def sla_cli():
         if data_loc:
             msg    = "SLA accepted! "
             status = "201"
+
             ranking = dmm.dmm(data_loc, time, offer, ss_username, ss_password)
             winner = ranking[0]
             print "expected time is %d with cost %d" % (winner[-1], winner[3])

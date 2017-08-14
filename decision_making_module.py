@@ -35,7 +35,7 @@ def query_db(cloud, time, offer):
                      }
              }
           }
-    return(res.search(index=index))
+    return(res.get(index=index,doc_type=type,id=cloud))
 
 ''' decision making moduke
 
@@ -51,18 +51,18 @@ def dmm(cloud, time, offer, ss_username, ss_password):
     api.login(ss_username, ss_password)
     ranking = []
     for c in cloud:
-        rep = query_db(c, time, offer)['hits']
-        pp(rep['hits'][0]['_source']['CannedOffer_1'])
-        if rep['total']:
-            specs = srv3._format_specs(rep['hits'][0]['_source'][offer]['components'])
-            time  = rep['hits'][0]['_source'][offer]['execution_time']
+        rep = query_db(c, time, offer)
+        pp(rep['_source']['CannedOffer_1'])
+        if rep['found']:
+            specs = srv3._format_specs(rep['_source'][offer]['components'])
+            time  = rep['_source'][offer]['execution_time']
             serviceOffers = srv3._components_service_offers(c, specs)
             mapper_so =  serviceOffers['mapper']
             reducer_so =  serviceOffers['reducer']
             cost = get_price([mapper_so, reducer_so], time)
             print c
-      ranking.append([c, mapper_so, reducer_so, cost ])
-    return sorted(ranking, key=lambda x:x[2])
+        ranking.append([c, mapper_so, reducer_so, cost, time ])
+    return sorted(ranking, key=lambda x:x[3])
 
 if __name__ == '__main__':
     cloud=['ec2-eu-west']
