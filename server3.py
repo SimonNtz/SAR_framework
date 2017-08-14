@@ -103,13 +103,13 @@ def wait_product(deployment_id, cloud, offer,  time_limit):
     state           = deployment_data[2]
     output_id       =  ""
 
-    while state != ("ready" | "cancelled" | "aborted") and  not output_id:
+    while state != "ready"  and  not output_id:
         deployment_data = api.get_deployment(deployment_id)
         t = watch_execution_time(deployment_data[3])
         print "Waiting state ready. Currently in state: \
 %s Time elapsed: %s seconds" % (state, t)
         print "SLA time bound left: %d" % (int(time_limit) - int(t))
-        if (t >= time_limit) or (state == ("cancelled" | "aborted")):
+        if (t >= time_limit) or (state == ("cancelled" or "aborted")):
             cancel_deployment(deployment_id)
             return("SLA time bound exceeded. Deployment is cancelled.")
 
@@ -192,26 +192,27 @@ def populate_db( index, type, id=""):
       if not id:
           rep = res.indices.create(index=index,
                                    ignore=400)
+          print "Create index"
       else:
           rep = res.index(index=index,
                           doc_type=type,
                           id=id,
                           body={})
-      print "Create index on BDB"
+          print "Create document %s" % id
       print rep
       return rep
 
 
 def create_BDB(clouds, specs_vm, product_list, offer):
     index='sar'
-    type='offer-cloud'
+    doc_type='offer-cloud'
     req_index = requests.get(elastic_host + '/' + index)
 
     if not req_index:
-        populate_db( index, type)
+        populate_db( index, doc_type)
 
     for c in clouds:
-        populate_db( index, type, c)
+        populate_db( index, doc_type, c)
         serviceOffers = _components_service_offers(c, specs_vm)
         deployment_id = deploy_run(c, product_list, serviceOffers, offer,9999)
         print "Deploy run: %s on cloud %s with service offers %s" \
