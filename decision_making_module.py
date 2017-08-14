@@ -29,7 +29,7 @@ def query_db(cloud, time, offer):
     query = { "query":{
           "range" : {
                "%s.execution_time" % offer: {
-                      "lte": 980,
+                      "lte": time,
                       "gt": 900
                        }
                      }
@@ -49,19 +49,18 @@ def query_db(cloud, time, offer):
 
 def dmm(cloud, time, offer, ss_username, ss_password):
     api.login(ss_username, ss_password)
-    dtype = '|S64 , |S64, i8'
     ranking = []
     for c in cloud:
         rep = query_db(c, time, offer)['hits']
         pp(rep['hits'][0]['_source']['CannedOffer_1'])
-    if rep['total']:
-      specs = srv3._format_specs(rep['hits'][0]['_source'][offer]['components'])
-      time  = rep['hits'][0]['_source'][offer]['execution_time']
-      serviceOffers = srv3._components_service_offers(c, specs)
-      mapper_so =  serviceOffers['mapper']
-      reducer_so =  serviceOffers['reducer']
-      cost = get_price([mapper_so, reducer_so], time)
-      print c
+        if rep['total']:
+            specs = srv3._format_specs(rep['hits'][0]['_source'][offer]['components'])
+            time  = rep['hits'][0]['_source'][offer]['execution_time']
+            serviceOffers = srv3._components_service_offers(c, specs)
+            mapper_so =  serviceOffers['mapper']
+            reducer_so =  serviceOffers['reducer']
+            cost = get_price([mapper_so, reducer_so], time)
+            print c
       ranking.append([c, mapper_so, reducer_so, cost ])
     return sorted(ranking, key=lambda x:x[2])
 

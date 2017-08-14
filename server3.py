@@ -39,8 +39,8 @@ def connect_s3():
 def _format_specs(specs):
     for k,v in specs.items():
         specs[k][0] = ("resource:vcpu='%d'" % v[0])
-        specs[k][1] = ("resource:ram>'%d'" % v[1])
-        specs[k][2] = ("resource:disk>'%d'" % v[2])
+        specs[k][1] = ("resource:ram>'%d'" % v[1]-1)
+        specs[k][2] = ("resource:disk>'%d'" % v[2]-1)
 
     return specs
 
@@ -292,7 +292,7 @@ def create_BDB(clouds, specs_vm, product_list, offer):
 def _check_BDB_cloud(index, clouds):
     valid_cloud = []
     for c in _check_str_list(clouds):
-        rep = _get_elastic(index + doc_type + '%s/' % c)
+        rep = _get_elastic(index + '/' + doc_type + '/' + c)
         if rep.json()['found']:
             valid_cloud.append(c)
 
@@ -469,13 +469,15 @@ def sla_cli():
             msg    = "SLA accepted! "
             status = "201"
             ranking = dmm.dmm(data_loc, time, offer, ss_username, ss_password)
-            pp(ranking)
-            serviceOffers = { 'mapper': ranking[0][1],
-                              'reducer': ranking[0][2]}
-            deploy_run(ranking[0][0],
+            winner = ranking[0]
+            print "expected time is %d with cost %d" % (winner[-1], winner[3])
+            serviceOffers = { 'mapper': winner[1],
+                              'reducer': winner[2]}
+            deploy_run(winner[0],
                        product_list,
                        serviceOffers,
-                       offer, time) # offer
+                       offer,
+                        time) # offer
 
         else:
             msg = "Data not found in clouds!"
