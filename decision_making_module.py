@@ -35,7 +35,7 @@ def query_db(cloud, time, offer):
                      }
              }
           }
-    return(res.search(index='sar7'))
+    return(res.search(index=index))
 
 ''' decision making moduke
 
@@ -53,7 +53,7 @@ def dmm(cloud, time, offer, ss_username, ss_password):
     ranking = []
     for c in cloud:
         rep = query_db(c, time, offer)['hits']
-        pp(rep['hits'][0]['_source']['1'])
+        pp(rep['hits'][0]['_source']['CannedOffer_1'])
     if rep['total']:
       specs = srv3._format_specs(rep['hits'][0]['_source'][offer]['components'])
       time  = rep['hits'][0]['_source'][offer]['execution_time']

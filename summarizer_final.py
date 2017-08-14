@@ -202,10 +202,10 @@ def create_index(cloud, offer, time_records, products, serviceOffers):
              }
           }
 
-    rep = res.index(index='sar',
+    rep = res.update(index='sar',
                       doc_type=doc_type,
                       id=cloud,
-                      body=run)
+                      body={"doc":run})
     print rep['created']
     pp(res.get(index='sar',doc_type=doc_type, id=cloud))
 

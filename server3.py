@@ -13,7 +13,7 @@ import summarizer_final as summarizer
 app = Flask(__name__)
 api = Api()
 elastic_host = 'http://localhost:9200'
-doc_type = '/foo3/'
+doc_type = 'eo-proc'
 server_host = 'localhost'
 res = Elasticsearch([{'host': 'localhost', 'port': 9200}])
 
@@ -263,7 +263,6 @@ def _schema_validation(jsonData):
 def populate_db( index, type, id=""):
       if id:
           rep = res.indices.create(index=index,
-                                   doc_type=type,
                                    ignore=400)
       else:
           rep = res.index(index=index,
@@ -373,7 +372,7 @@ def sla_cost():
     cloud = get_user_connectors('simon1992')
     data_admin = {}
     for c in cloud:
-        item = requests.get(elastic_host + '/sar7' + doc_type + c).json()
+        item = requests.get(elastic_host + '/' + index + doc_type + c).json()
         if item['found']:
             pp(item)
             item = item['_source']
@@ -445,7 +444,7 @@ def sla_init():
 
 @app.route('/SLA_CLI', methods=['POST'])
 def sla_cli():
-    index = '/sar7'
+    index = 'sar'
 
     try:
         _check_BDB_index(index)
