@@ -276,9 +276,9 @@ def populate_db( index, type, id=""):
 
 
 def create_BDB(clouds, specs_vm, product_list, offer):
-    index='/sar'
+    index='sar'
     type='/offer-cloud/'
-    req_index = requests.get(elastic_host + index)
+    req_index = requests.get(elastic_host + '/' + index)
 
     if not req_index:
         populate_db( index, type)
@@ -286,8 +286,9 @@ def create_BDB(clouds, specs_vm, product_list, offer):
     for c in clouds:
         populate_db( index, type, c)
         serviceOffers = _components_service_offers(c, specs_vm)
-        print "Deploy run: %s on cloud %s" \
-        % (deploy_run(c, product_list, serviceOffers, offer,9999), c)
+        deployment_id = deploy_run(c, product_list, serviceOffers, offer,9999)
+        print "Deploy run: %s on cloud %s with service offers %s" \
+        % (deployment_id, c, str(serviceOffers))
 
 def _check_BDB_cloud(index, clouds):
     valid_cloud = []
@@ -342,7 +343,7 @@ def deploy_run(cloud, product, serviceOffers, offer, time ):
     #mapper_so = "service-offer/cc382a2d-20f4-499d-82c2-046873e0cd05"
     #reducer_so = "service-offer/cc382a2d-20f4-499d-82c2-046873e0cd05"
     #cloud = "eo-cesnet-cz1"
-    rep = ""
+    deploy_id = "Cancelled"
     if mapper_so and reducer_so:
         deploy_id = api.deploy('EO_Sentinel_1/procSAR',
                 cloud={'mapper': cloud, 'reducer':cloud},
@@ -358,10 +359,9 @@ def deploy_run(cloud, product, serviceOffers, offer, time ):
         daemon_watcher = Thread(target = wait_product, args = (deploy_id, cloud, offer, time))
         daemon_watcher.setDaemon(True)
         daemon_watcher.start()
-        rep += rep
     else:
         print("No corresponding instances type found on connector %s" % c)
-    return rep
+    return deploy_id
 
 
 def get_user_connectors(user):

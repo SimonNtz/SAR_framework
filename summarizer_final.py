@@ -186,7 +186,7 @@ def query_run(duiid, cloud):
 
 
 def create_index(cloud, offer, time_records, products, serviceOffers):
-
+    doc_type='eo-proc'
     run = {
            offer :{
              'components': {'mapper': get_specs(serviceOffers[0]),
@@ -203,11 +203,11 @@ def create_index(cloud, offer, time_records, products, serviceOffers):
           }
 
     rep = res.index(index='sar',
-                      doc_type='eo-proc',
-                      id=cloud, 
+                      doc_type=doc_type,
+                      id=cloud,
                       body=run)
     print rep['created']
-    pp(res.get(index='sar', id=cloud))
+    pp(res.get(index='sar',doc_type=doc_type, id=cloud))
 
 def summarize_run(duiid, cloud, offer, ss_username, ss_password):
     api.login(ss_username, ss_password)
