@@ -187,6 +187,10 @@ def query_run(duiid, cloud):
 
 def create_index(cloud, offer, time_records, products, serviceOffers):
     doc_type='eo-proc'
+    price = get_price(serviceOffers, time_records)
+    if not price:
+        price = 0
+        
     run = {
            offer :{
              'components': {'mapper': get_specs(serviceOffers[0]),
