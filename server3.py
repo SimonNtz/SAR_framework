@@ -39,8 +39,8 @@ def connect_s3():
 def _format_specs(specs):
     for k,v in specs.items():
         specs[k][0] = ("resource:vcpu='%d'" % v[0])
-        specs[k][1] = ("resource:ram>'%d'" % v[1]-1)
-        specs[k][2] = ("resource:disk>'%d'" % v[2]-1)
+        specs[k][1] = ("resource:ram>'%d'" % int(v[1]-1))
+        specs[k][2] = ("resource:disk>'%d'" % int(v[2]-1))
 
     return specs
 
