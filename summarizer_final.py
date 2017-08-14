@@ -111,9 +111,8 @@ def _service_offer(id):
     return api.cimi_get(id).json
 
 
-def get_specs(id):
+def _get_specs(id):
      js = api.cimi_get(id).json
-
      return [js['resource:vcpu'], js['resource:ram'], js['resource:disk']]
 
 
@@ -134,7 +133,7 @@ def get_price(ids, time_records):
     return(cost)
 
 
-def extract_field(data, field):
+def _extract_field(data, field):
     return([v['_source'][field] for v in data.values()])
 
 
@@ -185,16 +184,15 @@ def query_run(duiid, cloud):
     return res.search(index='_all', body=query, size=300)
 
 
-def create_index(cloud, offer, time_records, products, serviceOffers):
-    doc_type='eo-proc'
+def create_run_doc(cloud, offer, time_records, products, serviceOffers):
     price = get_price(serviceOffers, time_records)
     if not price:
         price = 0
-        
+
     run = {
            offer :{
-             'components': {'mapper': get_specs(serviceOffers[0]),
-                           'reducer': get_specs(serviceOffers[0])},
+             'components': {'mapper': _get_specs(serviceOffers[0]),
+                           'reducer': _get_specs(serviceOffers[0])},
              'products': products ,
              'price': '%.5f' % (get_price(serviceOffers, time_records)),
              'timestamp': timestamp(),
@@ -207,11 +205,10 @@ def create_index(cloud, offer, time_records, products, serviceOffers):
           }
 
     rep = res.update(index='sar',
-                      doc_type=doc_type,
+                      doc_type='eo-proc',
                       id=cloud,
-                      body=run)
+                      body={"doc":run})
     print rep['created']
-    pp(res.get(index='sar',doc_type=doc_type, id=cloud))
 
 def summarize_run(duiid, cloud, offer, ss_username, ss_password):
     api.login(ss_username, ss_password)
@@ -223,15 +220,11 @@ def summarize_run(duiid, cloud, offer, ss_username, ss_password):
     products = map(lambda x:get_product_info(x), mappersData.values())
     serviceOffers = _get_service_offer(mappers, reducer)
 
-    rep = create_index( cloud, offer, time_records, products, serviceOffers)
+    rep = create_run_doc( cloud, offer, time_records, products, serviceOffers)
     return rep
 
 if __name__ ==  '__main__' :
-    cloud = "ec2-eu-west"
-    duiid = "3d371680-86d2-49fc-b3d0-2fd5289cb1af"
-    offer = "CannedOffer_1"
+    cloud = ""
+    duiid = ""
+    offer = ""
     summarize_run(duiid, cloud, offer, ss_username, ss_password)
-
-
- # TODO: define complete run with raise error !
-    pp(run)

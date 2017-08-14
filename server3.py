@@ -188,35 +188,33 @@ def _schema_validation(jsonData):
     return True
 
 
-def populate_db( index, type, id=""):
+def populate_db( index, id=""):
       if not id:
           rep = res.indices.create(index=index,
                                    ignore=400)
           print "Create index"
       else:
           rep = res.index(index=index,
-                          doc_type=type,
+                          doc_type="eo-proc",
                           id=id,
                           body={})
-          print "Create document %s" % id
+          print "Create document %s: " % id
       print rep
       return rep
 
 
 def create_BDB(clouds, specs_vm, product_list, offer):
     index='sar'
-    doc_type='offer-cloud'
     req_index = requests.get(elastic_host + '/' + index)
-
     if not req_index:
-        populate_db( index, doc_type)
+        populate_db(index)
 
     for c in clouds:
-        populate_db( index, doc_type, c)
+        populate_db(index, c)
         serviceOffers = _components_service_offers(c, specs_vm)
-        deployment_id = deploy_run(c, product_list, serviceOffers, offer,9999)
+        deployment_id = deploy_run(c, product_list, serviceOffers, offer, 9999)
         print "Deploy run: %s on cloud %s with service offers %s" \
-        % (deployment_id, c, str(serviceOffers))
+% (deployment_id, c, str(serviceOffers))
 
 def _check_BDB_cloud(index, clouds):
     valid_cloud = []
@@ -227,7 +225,7 @@ def _check_BDB_cloud(index, clouds):
 
     if not valid_cloud:
         raise ValueError("Benchmark DB has no logs for %s \
-                        go use POST on `SLA_INIT` to initialize." % clouds)
+go use POST on `SLA_INIT` to initialize." % clouds)
     return valid_cloud
 
 
