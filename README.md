@@ -55,8 +55,8 @@ In order to successfully execute the application, you should have:
     curl -H "Content-Type: application/json" -X POST /<server_ip>:81/SLA_INIT -d
     '{
       "specs_vm"={
-          "mapper":[4,16,100],
-           "reducer":[1,0,5,10]
+          "mapper":[4, 16000,100], ## example of instance size with :
+           "reducer":[1, 1000,100] ## cpu, ram, disk
            },
       "product_list"=[
           "S1A_IW_GRDH_1SDV_20151226T182813_20151226T182838_009217_00D48F_5D5F"

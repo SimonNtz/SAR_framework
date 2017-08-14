@@ -23,13 +23,19 @@ _get_ss_login() {
   ss_username=`ss-get ss-username`
   ss_password=`ss-get ss-password`
 }
+_get_ss_login() {
+  server_ip=`ss-get hostname`
+  server_hostname=`ss-get machine-hn`
+}
 
 
 _ss_set_hostname
 _get_ss_login
+_get_hostname
 _install_python_APIs
 _instal_server_module
 
 
 cd ~/SAR_framework/deployment/dmm/
-python server3.py $ss_username $ss_password &
+python server_dmm.py $ss_username $ss_password \
+$server_ip $server_hostname

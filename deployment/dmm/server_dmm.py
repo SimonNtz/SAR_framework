@@ -264,20 +264,28 @@ def _components_service_offers(cloud, specs):
     return serviceOffers
 
 def deploy_run(cloud, product, serviceOffers, offer, time ):
+    server_ip   = sys.argv[3]
+    server_hostname   = sys.argv[4]
+
     #mapper_so =  serviceOffers['mapper']
     #reducer_so =  serviceOffers['reducer']
     mapper_so = "service-offer/cc382a2d-20f4-499d-82c2-046873e0cd05"
     reducer_so = "service-offer/cc382a2d-20f4-499d-82c2-046873e0cd05"
+
     cloud = "eo-cesnet-cz1"
     deploy_id = "Not deployed"
     if mapper_so and reducer_so:
         deploy_id = api.deploy('EO_Sentinel_1/procSAR',
                 cloud={'mapper': cloud, 'reducer':cloud},
                 parameters={'mapper' : {'service-offer': \
-                             mapper_so,
-                             'product-list': (' ').join(product)},
+                                                    mapper_so,
+                             'product-list': (' ').join(product),
+                             'server_hn':server_hostname,
+                             'server_ip':server_ip},
                              'reducer': {'service-offer': \
-                             reducer_so}},
+                                                    reducer_so,
+                              'server_hn':server_hostname,
+                              'server_ip':server_ip}},
                 multiplicity={'mapper': len(product),
                               'reducer':1},
                 tags='EOproc', keep_running='never')
