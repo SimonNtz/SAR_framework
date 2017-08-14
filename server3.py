@@ -277,7 +277,7 @@ def populate_db( index, type, id=""):
 
 def create_BDB(clouds, specs_vm, product_list, offer):
     index='sar'
-    type='/offer-cloud/'
+    type='offer-cloud'
     req_index = requests.get(elastic_host + '/' + index)
 
     if not req_index:
@@ -304,7 +304,7 @@ def _check_BDB_cloud(index, clouds):
 
 
 def _get_elastic(index=""):
-    return requests.get(elastic_host + index)
+    return requests.get(elastic_host + '/' + index)
 
 def _check_BDB_state():
     if not _get_elastic():
