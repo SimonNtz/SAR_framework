@@ -193,7 +193,7 @@ def create_index(cloud, offer, time_records, products, serviceOffers):
                            'reducer': get_specs(serviceOffers[0])},
              'products': products ,
              'price': '%.5f' % (get_price(serviceOffers, time_records)),
-             'timestamp': timestamp,
+             'timestamp': timestamp(),
              'execution_time': time_records['total'],
              'time_records': {
                        'mapper': time_records['mappers'],
