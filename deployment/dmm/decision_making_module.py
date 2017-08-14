@@ -10,7 +10,7 @@ import math
 
 api = Api()
 index = 'sar'
-type = 'offer-cloud'
+type = 'eo-proc'
 
 server_host = 'localhost'
 res = Elasticsearch([{'host': 'localhost', 'port': 9200}])
