@@ -23,7 +23,7 @@ _get_ss_login() {
   ss_username=`ss-get ss-username`
   ss_password=`ss-get ss-password`
 }
-_get_ss_login() {
+_get_cloud_hostname() {
   server_ip=`ss-get hostname`
   server_hostname=`ss-get machine-hn`
 }
@@ -31,7 +31,7 @@ _get_ss_login() {
 
 _ss_set_hostname
 _get_ss_login
-_get_hostname
+_get_cloud_hostname
 _install_python_APIs
 _instal_server_module
 
