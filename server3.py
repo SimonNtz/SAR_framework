@@ -44,20 +44,6 @@ def _format_specs(specs):
 
     return specs
 
-def apply_time_filter(BDB, t):
-    return({k:v for k,v in BDB.iteritems() if v[2] <= t})
-
-
-def apply_cloud_filter(BDB, c):
-    return({k:v for k,v in BDB.iteritems() if v[0] in c})
-
-
-def apply_filter_BDB(BDB, c, t):
-    return(apply_time_filter(apply_cloud_filter(BDB,c),t))
-
-
-def get_price(id):
-    return(api.cimi_get(id).json['price:unitCost'])
 
 
 def get_vm_specs(id):
@@ -69,61 +55,6 @@ def get_vm_specs(id):
                  #'resource:typeDisk'] Maybe SSD boost the process
     return(tuple(v for k,v in json.items() if k in spec_keys))
 
-
-def rank_per_price_BDB(BDB):
-    temp = [(v[1], get_price(v[1])) for k,v in BDB.items()]
-    temp.sort(key=lambda tuple: tuple[1])
-    return(temp)
-
-
-def rank_per_resource(list_id_res):
-    list_id_res.sort(key=lambda tuple: tuple[1])
-    return(temp[0])
-
-def check_vm_specs(vm_ids):
-    print "CHECK SPECS"
-    vm_specs   = map(get_vm_specs, vm_ids)
-    return(compare_vm_specs(vm_specs))
-
-
-def compare_vm_specs(vm_specs):
-    dtype = 'i8, i8, |S64 , i8'
-    vm_specs = np.array(vm_specs, dtype=dtype)
-
-    return(vm_specs[0][2])
-
-
-def choose_vm(vm_set):
-    best_price = vm_set[0][1]
-    best_vms   = [k for k, v in vm_set if v == best_price]
-
-    if len(best_vms) > 1:
-        my_vm = check_vm_specs(best_vms)
-    else:
-        my_vm = best_vms[0]
-    return my_vm
-
-
-def DMM(clouds, time, offer):
-    """
-    Lookup for runs in benchmarking DB which :
-
-        - were deployed on the clouds where the data is located
-
-        - have an execution equal or smaller than the SLA
-
-        - The cheapest
-
-        - with the best specs
-
-    """
-    # BDB_temp = apply_filter_BDB(BDB, clouds, 500 )
-    # vm_set   = rank_per_price_BDB(BDB_temp)
-    # my_vm    = choose_vm(vm_set)
-
-    ranking = dmm.dmm(clouds, time, offer)
-    pp(ranking)
-    return(ranking)
 
 
 def download_product(bucket_id, output_id):
@@ -172,13 +103,13 @@ def wait_product(deployment_id, cloud, offer,  time_limit):
     state           = deployment_data[2]
     output_id       =  ""
 
-    while state != "ready" and  not output_id:
+    while state != ("ready" | "cancelled" | "aborted") and  not output_id:
         deployment_data = api.get_deployment(deployment_id)
         t = watch_execution_time(deployment_data[3])
         print "Waiting state ready. Currently in state: \
 %s Time elapsed: %s seconds" % (state, t)
         print "SLA time bound left: %d" % (int(time_limit) - int(t))
-        if t >= time_limit:
+        if (t >= time_limit) or (state == ("cancelled" | "aborted")):
             cancel_deployment(deployment_id)
             return("SLA time bound exceeded. Deployment is cancelled.")
 
@@ -217,11 +148,7 @@ def find_data_loc(prod_list):
     specs_data         = ["resource:type='DATA'", "resource:platform='S3'"]
     rep_so             = la.request_data(specs_data, prod_list)['serviceOffers']
     cloud_set      = list(set([c['connector']['href'] for c in rep_so]))
-    #cloud_set      = []
-    #['cloud_a, cloud_b, cloud_c', 'cloud_d']
     cloud_legit    = []
-    #cloud_legit    = ['c1', 'c2', 'c3', 'c4'] # FAKED
-
     for c in cloud_set:
         if _all_products_on_cloud(c, rep_so, prod_list):
              cloud_legit.append(c)
@@ -262,7 +189,7 @@ def _schema_validation(jsonData):
 
 
 def populate_db( index, type, id=""):
-      if id:
+      if not id:
           rep = res.indices.create(index=index,
                                    ignore=400)
       else:
@@ -407,10 +334,7 @@ def sla_cost():
               specs_vm: {'mapper': ['']),
                       'reducer': ['']}
 
-
 '''
-
-
 @app.route('/SLA_INIT', methods=['POST'])
 def sla_init():
    data = request.get_json()

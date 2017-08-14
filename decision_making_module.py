@@ -23,14 +23,13 @@ def get_price(ids, time):
     else:
       time = time/ 3600
     cost = time * (mapper_unit_price + reducer_unit_price)
-
     return(cost)
+
 def query_db(cloud, time, offer):
     query = { "query":{
           "range" : {
                "%s.execution_time" % offer: {
                       "lte": time,
-                      "gt": 900
                        }
                      }
              }
@@ -60,7 +59,6 @@ def dmm(cloud, time, offer, ss_username, ss_password):
             mapper_so =  serviceOffers['mapper']
             reducer_so =  serviceOffers['reducer']
             cost = get_price([mapper_so, reducer_so], time)
-            print c
         ranking.append([c, mapper_so, reducer_so, cost, time ])
     return sorted(ranking, key=lambda x:x[3])
 
