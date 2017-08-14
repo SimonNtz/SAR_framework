@@ -418,7 +418,7 @@ def sla_init():
    global s3_credentials
    s3_credentials = data['result']['s3_credentials']
    offer = "CannedOffer_1"
-   print "Instance sizes: " + specs_vm
+   print "Instance sizes: " + str(specs_vm)
 
    try:
        _check_BDB_state()

@@ -68,7 +68,7 @@ def compute_time_records(mappers, reducer, duiid):
     for i,v in enumerate(mappers.values()):
         mappers_time[i]['download'] = _download_time(v)
 
-    reducer_time = _intra_node_time(reducer)
+    reducer_time = _intra_node_time(reducer, duiid)
     reducer_time['upload'] = _upload_time(reducer)
 
     return({'mappers':mappers_time,
@@ -77,8 +77,8 @@ def compute_time_records(mappers, reducer, duiid):
 
 
 def _upload_time(data):
-    upload_time = _time_at(data, 'finish uploading') - \
-               _time_at(data, 'start uploading')
+    upload_time = _time_at(data, 'finish upload') - \
+               _time_at(data, 'start upload')
 
 def _download_time(data):
     download_time = _time_at(data, 'finish downloading') - \
