@@ -38,4 +38,4 @@ _instal_server_module
 
 cd ~/SAR_framework/deployment/dmm/
 python server_dmm.py $ss_username $ss_password \
-$server_ip $server_hostname
+$server_ip $server_hostname &
