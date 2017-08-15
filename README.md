@@ -47,10 +47,10 @@ In order to successfully execute the application, you should have:
      ```
   4. Wait for the 'ready' state
 
-  5. Recover the server's ip and start work with !
+  5. Recover the server's ip and start working with !
 
-    ```
     - Initialization with benchmarking specs and product:
+    ```
 
     curl -H "Content-Type: application/json" -X POST /<server_ip>:81/SLA_INIT -d
     '{
@@ -70,9 +70,12 @@ In order to successfully execute the application, you should have:
                ]
              }
       }'
+      ```
+
 
     - Product generation with SLA:
 
+    ```
     curl -H "Content-Type: application/json" -X POST /<server_ip>:81/SLA_CLI -d
      '{
        "SLA":{
