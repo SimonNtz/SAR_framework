@@ -6,6 +6,7 @@ import sys
 from slipstream.api import Api
 import lib_access as la
 import server_dmm as srv_dmm
+import summarizer as summ
 import math
 
 api = Api()
@@ -14,16 +15,6 @@ type = 'eo-proc'
 
 server_host = 'localhost'
 res = Elasticsearch([{'host': 'localhost', 'port': 9200}])
-
-def get_price(ids, time):
-    mapper_unit_price = float(api.cimi_get(ids[0]).json['price:unitCost'])
-    reducer_unit_price = float(api.cimi_get(ids[1]).json['price:unitCost'])
-    if api.cimi_get(ids[0]).json['price:billingPeriodCode'] == 'HUR' :
-      time = math.ceil(time / 3600)
-    else:
-      time = time/ 3600
-    cost = time * (mapper_unit_price + reducer_unit_price)
-    return(cost)
 
 def query_db(cloud, time, offer):
     query = { "query":{
@@ -51,15 +42,15 @@ def dmm(cloud, time, offer, ss_username, ss_password):
     ranking = []
     for c in cloud:
         rep = query_db(c, time, offer)
-        pp(rep['_source']['CannedOffer_1'])
-        if rep['found']:
+        if rep['_source']:
+            pp(rep['_source']['CannedOffer_1'])
             specs = srv_dmm._format_specs(rep['_source'][offer]['components'])
-            time  = rep['_source'][offer]['execution_time']
+            time  = rep['_source'][c][offer]['execution_time']
             serviceOffers = srv_dmm._components_service_offers(c, specs)
             mapper_so =  serviceOffers['mapper']
             reducer_so =  serviceOffers['reducer']
-            cost = get_price([mapper_so, reducer_so], time)
-        ranking.append([c, mapper_so, reducer_so, cost, time ])
+            cost = summ.get_price([mapper_so, reducer_so], time)
+            ranking.append([c, mapper_so, reducer_so, cost, time ])
     return sorted(ranking, key=lambda x:x[3])
 
 if __name__ == '__main__':

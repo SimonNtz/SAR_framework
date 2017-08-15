@@ -219,8 +219,9 @@ def create_BDB(clouds, specs_vm, product_list, offer):
 def _check_BDB_cloud(index, clouds):
     valid_cloud = []
     for c in _check_str_list(clouds):
-        rep = _get_elastic(index + '/' + doc_type + '/' + c)
-        if rep.json()['found']:
+        req = ('/').join([index, doc_type, c])
+        rep = _get_elastic(req).json()
+        if rep['found']:
             valid_cloud.append(c)
 
     if not valid_cloud:
@@ -308,8 +309,8 @@ def sla_cost():
     cloud = get_user_connectors('simon1992')
     data_admin = {}
     for c in cloud:
-
-        item = requests.get(elastic_host + '/' + index + doc_type + c).json()
+        req = ('/').join([elastic_host,'sar',doc_type,c])
+        item = requests.get(req).json()
         if item['found']:
             pp(item)
             item = item['_source']
@@ -399,12 +400,13 @@ def sla_cli():
         msg    = ""
         status = ""
 
-        if data_loc:
+        ranking = dmm.dmm(data_loc, time, offer, ss_username, ss_password)
+
+        if data_loc and ranking:
             msg    = "SLA accepted! "
             status = "201"
-
-            ranking = dmm.dmm(data_loc, time, offer, ss_username, ss_password)
             winner = ranking[0]
+
             print "expected time is %d with cost %d" % (winner[-1], winner[3])
             serviceOffers = { 'mapper': winner[1],
                               'reducer': winner[2]}
@@ -415,7 +417,7 @@ def sla_cli():
                         time) # offer
 
         else:
-            msg = "Data not found in clouds!"
+            msg = "Data not found in clouds!\n"
             status = 412
 
 

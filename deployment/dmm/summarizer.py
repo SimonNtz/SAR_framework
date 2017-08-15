@@ -119,6 +119,15 @@ def _get_specs(id):
 def get_price(ids, time_records):
     mapper_multiplicity = len(time_records['mappers'])
     time = time_records['total']
+
+    try:
+        mapper_unit_price = float(api.cimi_get(ids[0]).json['price:unitCost'])
+        reducer_unit_price = float(api.cimi_get(ids[1]).json['price:unitCost'])
+
+    except TypeError:
+        print "No princing available"
+        return 0
+
     mapper_unit_price = float(api.cimi_get(ids[0]).json['price:unitCost'])
     reducer_unit_price = float(api.cimi_get(ids[1]).json['price:unitCost'])
 
@@ -185,9 +194,6 @@ def query_run(duiid, cloud):
 
 
 def create_run_doc(cloud, offer, time_records, products, serviceOffers):
-    price = get_price(serviceOffers, time_records)
-    if not price:
-        price = 0
 
     run = {
            offer :{
@@ -224,7 +230,5 @@ def summarize_run(duiid, cloud, offer, ss_username, ss_password):
     return rep
 
 if __name__ ==  '__main__' :
-    cloud = ""
-    duiid = ""
-    offer = ""
-    summarize_run(duiid, cloud, offer, ss_username, ss_password)
+    [duiid,cloud offer, ss_username, ss_password]= sys.argv[1:6]
+    summarize_run(duiid,  cloud, offer, ss_username, ss_password)
