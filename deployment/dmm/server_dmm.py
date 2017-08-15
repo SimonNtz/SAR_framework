@@ -363,7 +363,7 @@ def sla_init():
                              associated with the Nuvla account")
        print "Data located in: %s" % data_loc
        create_BDB(data_loc, specs_vm, product_list, offer)
-       msg = "Cloud %s are currently benchmarked." % data_loc
+       msg = "Cloud %s are currently benchmarked." % (',').join(data_loc)
        status = "201"
 
    except ValueError as err:
