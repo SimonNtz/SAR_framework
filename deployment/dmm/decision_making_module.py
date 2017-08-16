@@ -45,7 +45,7 @@ def dmm(cloud, time, offer, ss_username, ss_password):
         if rep['_source']:
             pp(rep['_source']['CannedOffer_1'])
             specs = srv_dmm._format_specs(rep['_source'][offer]['components'])
-            time  = rep['_source'][offer]['execution_time']
+            time  = rep['_source'][offer]['time_records']
             serviceOffers = srv_dmm._components_service_offers(c, specs)
             mapper_so =  serviceOffers['mapper']
             reducer_so =  serviceOffers['reducer']
