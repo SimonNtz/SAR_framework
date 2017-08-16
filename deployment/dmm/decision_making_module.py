@@ -55,10 +55,10 @@ def dmm(cloud, time, offer, ss_username, ss_password):
             cost = summ.get_price([mapper_so, reducer_so], time)
             ranking.append([c,
                             mapper_so,
-                            ,reducer_so,
-                             str(cost) + "EUR",
-                             str(time) + "sec",
-                             specs ])
+                            reducer_so,
+                            str(cost) + "EUR",
+                            str(time) + "sec",
+                            specs ])
     return sorted(ranking, key=lambda x:x[3])
 
 if __name__ == '__main__':
