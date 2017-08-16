@@ -406,7 +406,7 @@ def sla_cli():
             status = "201"
             winner = ranking[0]
 
-            print "expected time is %d with cost %d" % (winner[-1], winner[3])
+            print "expected time is %s with cost %s" % (winner[, winner[3])
             serviceOffers = { 'mapper': winner[1],
                               'reducer': winner[2]}
             deploy_run(winner[0],
