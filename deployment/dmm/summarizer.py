@@ -79,6 +79,7 @@ def compute_time_records(mappers, reducer, duiid):
 def _upload_time(data):
     upload_time = _time_at(data, 'finish upload') - \
                _time_at(data, 'start upload')
+    return upload_time
 
 def _download_time(data):
     download_time = _time_at(data, 'finish downloading') - \

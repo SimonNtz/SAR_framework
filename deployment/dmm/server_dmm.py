@@ -406,14 +406,15 @@ def sla_cli():
             status = "201"
             winner = ranking[0]
 
-            print "expected time is %s with cost %s" % (winner[, winner[3])
+            print "ranking: "
+            print ranking[0:3]
             serviceOffers = { 'mapper': winner[1],
                               'reducer': winner[2]}
             deploy_run(winner[0],
                        product_list,
                        serviceOffers,
                        offer,
-                        time) # offer
+                       time) # offer
 
         else:
             msg = "Data not found in clouds!\n"

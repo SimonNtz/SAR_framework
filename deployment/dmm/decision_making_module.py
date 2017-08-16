@@ -36,6 +36,11 @@ def query_db(cloud, time, offer):
   : from th
 
 '''
+def _prod_spec(r, spec):
+    spec[0:2] = [math.ceil(float(c * r)) for c in spec[0:2]]
+    return(map(int, spec))
+
+
 
 def dmm(cloud, time, offer, ss_username, ss_password):
     api.login(ss_username, ss_password)
@@ -45,21 +50,29 @@ def dmm(cloud, time, offer, ss_username, ss_password):
         if rep['_source']:
             pp(rep['_source']['CannedOffer_1'])
             past_time = rep['_source'][offer]['time_records']
-            ratio = math.ceil(float(time/past_time))
-            print "RATIO:" + str(ratio)
-            specs = srv_dmm._format_specs(rep['_source'][offer]['components'])
-            specs['mapper'] = ratio * specs['mapper']
+            print "ratio comp"
+            print time
+            print past_time['total']
+            ratio = math.ceil(float(past_time['total']/time))
+            print ratio
+            specs = rep['_source'][offer]['components']
+            specs['mapper'] = _prod_spec(ratio, specs['mapper'])
+            pp(specs)
+            specs = srv_dmm._format_specs(specs)
+            #specs['mapper'] = math.ceil(ratio * float(specs['mapper'][0:3]))
+
             serviceOffers = srv_dmm._components_service_offers(c, specs)
             mapper_so =  serviceOffers['mapper']
             reducer_so =  serviceOffers['reducer']
-            cost = summ.get_price([mapper_so, reducer_so], time)
+            cost = summ.get_price([mapper_so, reducer_so], past_time)
             ranking.append([c,
                             mapper_so,
                             reducer_so,
-                            str(cost) + "EUR",
-                            str(time) + "sec",
+                            str(cost) + " EUR",
+                            str(past_time['total']) + " sec",
                             specs ])
     return sorted(ranking, key=lambda x:x[3])
+
 
 if __name__ == '__main__':
     cloud=['ec2-eu-west']
