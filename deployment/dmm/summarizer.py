@@ -195,7 +195,7 @@ def create_run_doc(cloud, offer, time_records, products, serviceOffers):
     run = {
            offer :{
              'components': {'mapper': _get_specs(serviceOffers[0]),
-                           'reducer': _get_specs(serviceOffers[0])},
+                           'reducer': _get_specs(serviceOffers[1])},
              'products': products ,
              'price': '%.5f' % (get_price(serviceOffers, time_records)),
              'timestamp': timestamp(),

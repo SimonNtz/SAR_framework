@@ -20,7 +20,7 @@ def query_db(cloud, time, offer):
     query = { "query":{
           "range" : {
                "%s.execution_time" % offer: {
-                      "lte": time,
+                      "gte": 0,
                        }
                      }
              }
@@ -44,13 +44,21 @@ def dmm(cloud, time, offer, ss_username, ss_password):
         rep = query_db(c, time, offer)
         if rep['_source']:
             pp(rep['_source']['CannedOffer_1'])
+            past_time = rep['_source'][offer]['time_records']
+            ratio = math.ceil(float(time/past_time))
+            print "RATIO:" + str(ratio)
             specs = srv_dmm._format_specs(rep['_source'][offer]['components'])
-            time  = rep['_source'][offer]['time_records']
+            specs['mapper'] = ratio * specs['mapper']
             serviceOffers = srv_dmm._components_service_offers(c, specs)
             mapper_so =  serviceOffers['mapper']
             reducer_so =  serviceOffers['reducer']
             cost = summ.get_price([mapper_so, reducer_so], time)
-            ranking.append([c, mapper_so, reducer_so, cost, time ])
+            ranking.append([c,
+                            mapper_so,
+                            ,reducer_so,
+                             str(cost) + "EUR",
+                             str(time) + "sec",
+                             specs ])
     return sorted(ranking, key=lambda x:x[3])
 
 if __name__ == '__main__':
