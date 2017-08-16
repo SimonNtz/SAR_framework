@@ -117,29 +117,26 @@ def _get_specs(id):
 
 
 def get_price(ids, time_records):
-    mapper_multiplicity = len(time_records['mappers'])
+    mapper_multiplicity = len(time_records['mapper'])
     time = time_records['total']
-
+    print mapper_multiplicity
     try:
         mapper_unit_price = float(api.cimi_get(ids[0]).json['price:unitCost'])
         reducer_unit_price = float(api.cimi_get(ids[1]).json['price:unitCost'])
-
+        print "mmaper price:" + str(mapper_unit_price)
     except TypeError:
         print "No princing available"
         return 0
 
-    mapper_unit_price = float(api.cimi_get(ids[0]).json['price:unitCost'])
-    reducer_unit_price = float(api.cimi_get(ids[1]).json['price:unitCost'])
-
     if api.cimi_get(ids[0]).json['price:billingPeriodCode'] == 'HUR' :
-      time = math.ceil(time / 3600)
+        time = math.ceil(float(time / 3600))
+        print time
     else:
-      time = time/ 3600
-    print time
+      time = float(time/ 3600)
+      print "time is:" + str(time)
     cost = time * ((mapper_unit_price * mapper_multiplicity)
                                         + reducer_unit_price)
-
-    return(cost)
+    return cost
 
 
 def _extract_field(data, field):
@@ -214,7 +211,6 @@ def create_run_doc(cloud, offer, time_records, products, serviceOffers):
                       doc_type='eo-proc',
                       id=cloud,
                       body={"doc":run})
-    print rep['created']
 
 def summarize_run(duiid, cloud, offer, ss_username, ss_password):
     api.login(ss_username, ss_password)
@@ -226,9 +222,9 @@ def summarize_run(duiid, cloud, offer, ss_username, ss_password):
     products = map(lambda x:get_product_info(x), mappersData.values())
     serviceOffers = _get_service_offer(mappers, reducer)
 
-    rep = create_run_doc( cloud, offer, time_records, products, serviceOffers)
+    rep = create_run_doc(cloud, offer, time_records, products, serviceOffers)
     return rep
 
 if __name__ ==  '__main__' :
-    [duiid,cloud offer, ss_username, ss_password]= sys.argv[1:6]
+    [duiid, cloud, offer, ss_username, ss_password]= sys.argv[1:6]
     summarize_run(duiid,  cloud, offer, ss_username, ss_password)
